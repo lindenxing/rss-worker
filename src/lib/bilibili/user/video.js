@@ -55,8 +55,17 @@ let deal = async (ctx) => {
 		for (let desc of card.extend.origDesc) {
 			title += desc.text;
 		}
+		
+		// 从 modules 中获取 bvid
+		let bvid = '';
+		for (let _module of card.modules) {
+			if (_module.moduleType === 'module_dynamic' && _module.moduleDynamic?.dynArchive) {
+				bvid = _module.moduleDynamic.dynArchive.bvid || '';
+				break;
+			}
+		}
+		
 		// 直接链接到视频页面，而不是动态页面
-		let bvid = card.extend?.archiveProperty?.bvid || '';
 		let link = bvid ? `https://www.bilibili.com/video/${bvid}` : `https://t.bilibili.com/${card.extend.dynIdStr}`;
 		
 		let description = title + '<br/>';
