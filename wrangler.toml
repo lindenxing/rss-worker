@@ -8,6 +8,12 @@ compatibility_date = "2023-09-22"
 [vars]
 WEIBO_COOKIES = "WEIBOCN_FROM=1110006030; SUB=_2AkMeD3NQf8NxqwFRmv8SzGjgZIx-ww7EieKoU4KLJRM3HRl-yT9kqlwltRB6NY9dv0HlMQnrEJ7HgwEN-aiK4hotP8MM; SUBP=0033WrSXqPxfM72-Ws9jqgMF55529P9D9WhFFgmvIGN_KnOBuu39Lhrg; MLOGIN=0; _T_WM=79864565451; XSRF-TOKEN=889805; mweibo_short_token=4468dbb327; M_WEIBOCN_PARAMS=oid%3D5249642562324392%26luicode%3D10000011%26lfid%3D102803%26uicode%3D20000174"
 
+# Bilibili Cookies for watchlater feature
+# Get cookies from your browser after logging in to bilibili.com
+# Format: UID=COOKIE_STRING (multiple users separated by |)
+# Example: BILIBILI_COOKIES = "1466714313=SESSDATA=xxx; bili_jct=yyy; DedeUserID=zzz|1234567890=SESSDATA=aaa; bili_jct=bbb"
+BILIBILI_COOKIES = "1466714313=buvid3=B3AC7869-1108-9DC1-D6FD-7A3C10E9AA8E02199infoc; b_nut=1766762302; _uuid=EF52AEBB-7103E-DE6A-89EE-711077674CCD919171infoc; buvid4=11BE6A6E-295E-A50D-6848-31E15E78089F02872-025122623-VFDVzr731mu5XWa8VPM64%2BHykZJmapwMhpR3RACgzpKpf%2BcHnFQcEj%2BZGQunelvf; buvid_fp=4300d95da4548211b2aedcfa79b0a786; CURRENT_QUALITY=0; rpdid=%7C%28k%7CkmJR%29l~m0J%27u~YY%29%7CY%29mu; SESSDATA=71be8c5f%2C1782359370%2C99fac%2Ac2CjAHv_bjte1XpwPCvwJJv184bRr_T6-srKGaoqnW9rAUvWonsi53wgT9Y6scX_i-33YSVmRRekVIVFRnN0ZiMG5TU2w4V2EwaW92ajNFbHVHdVNNT0JjTFVVVXZIOXA0QnhTekRyVWVsVTFodTNNeFlLTUdLNHdQOHgxLXhRaGdFTlF5OUg0OHhBIIEC; bili_jct=4c913718b126c22221c33e82ea882286; DedeUserID=1466714313; DedeUserID__ckMd5=873a34e4cadeb80e; theme-tip-show=SHOWED; lang=zh-Hans; home_feed_column=5; browser_resolution=2268-1149; CURRENT_FNVAL=4048; hit-dyn-v2=1; bili_ticket=eyJhbGciOiJIUzI1NiIsImtpZCI6InMwMyIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjkwOTI5MDksImlhdCI6MTc2ODgzMzY0OSwicGx0IjotMX0.lovVLVnm325e5IvfU-s1MiYLLK-m1hhyVVz4KhX0jd0; bili_ticket_expires=1769092849; b_lsid=B5210DA6D_19BD6BF6465; sid=5brj19mu"
+
 # [build]
 # command = "npm run build"
 # cwd = "dist"
