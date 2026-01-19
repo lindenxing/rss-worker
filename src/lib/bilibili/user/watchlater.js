@@ -6,25 +6,30 @@ let deal = async (ctx) => {
 	// 优先从请求头获取 Cookie，如果没有则从环境变量获取
 	let cookie = ctx.req.header('Cookie') || '';
 	
-	// 如果请求头没有 Cookie，尝试从环境变量中查找
+	// 如果请求头没有 Cookie，尝试从环境变量或 Secrets 中查找
 	if (!cookie) {
-		const bilibiliCookies = ctx.env?.BILIBILI_COOKIES || '';
-		console.log('BILIBILI_COOKIES from env:', bilibiliCookies.substring(0, 100));
-		if (bilibiliCookies) {
-			// 格式: UID=COOKIE_STRING|UID=COOKIE_STRING
-			const cookieMap = {};
-			bilibiliCookies.split('|').forEach(item => {
-				const firstEqualIndex = item.indexOf('=');
-				if (firstEqualIndex > 0) {
-					const cookieUid = item.substring(0, firstEqualIndex);
-					const cookieStr = item.substring(firstEqualIndex + 1);
-					if (cookieUid && cookieStr) {
-						cookieMap[cookieUid] = cookieStr;
+		// 优先从 Secrets 中查找（格式：BILIBILI_COOKIE_1466714313）
+		const secretKey = `BILIBILI_COOKIE_${uid}`;
+		cookie = ctx.env?.[secretKey] || '';
+		
+		// 如果 Secrets 中没有，尝试从环境变量 BILIBILI_COOKIES 中查找
+		if (!cookie) {
+			const bilibiliCookies = ctx.env?.BILIBILI_COOKIES || '';
+			if (bilibiliCookies) {
+				// 格式: UID=COOKIE_STRING|UID=COOKIE_STRING
+				const cookieMap = {};
+				bilibiliCookies.split('|').forEach(item => {
+					const firstEqualIndex = item.indexOf('=');
+					if (firstEqualIndex > 0) {
+						const cookieUid = item.substring(0, firstEqualIndex);
+						const cookieStr = item.substring(firstEqualIndex + 1);
+						if (cookieUid && cookieStr) {
+							cookieMap[cookieUid] = cookieStr;
+						}
 					}
-				}
-			});
-			cookie = cookieMap[uid] || '';
-			console.log('Cookie for uid', uid, ':', cookie ? cookie.substring(0, 50) : 'not found');
+				});
+				cookie = cookieMap[uid] || '';
+			}
 		}
 	}
 	
