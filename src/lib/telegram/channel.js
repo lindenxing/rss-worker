@@ -30,7 +30,11 @@ let deal = async (ctx) => {
 		})
 		.on('.tgme_widget_message_bubble > .tgme_widget_message_text', {
 			text(text) {
-				tgme_widget_message_texts[tgme_widget_message_texts.length - 1] += text.text;
+				// 将文本中的 URL 转换为 HTML 链接
+				let content = text.text;
+				// 匹配 http:// 或 https:// 开头的 URL
+				content = content.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1">$1</a>');
+				tgme_widget_message_texts[tgme_widget_message_texts.length - 1] += content;
 			},
 		})
 		.on('.tgme_widget_message_bubble .tgme_widget_message_photo_wrap', {
@@ -49,6 +53,19 @@ let deal = async (ctx) => {
 			text(text) {
 				if (text.lastInTextNode) {
 					tgme_widget_message_texts[tgme_widget_message_texts.length - 1] += '</b>';
+				}
+			},
+		})
+		.on('.tgme_widget_message_bubble > .tgme_widget_message_text > a', {
+			element(element) {
+				const href = element.getAttribute('href');
+				if (href) {
+					tgme_widget_message_texts[tgme_widget_message_texts.length - 1] += `<a href="${href}">`;
+				}
+			},
+			text(text) {
+				if (text.lastInTextNode) {
+					tgme_widget_message_texts[tgme_widget_message_texts.length - 1] += '</a>';
 				}
 			},
 		})

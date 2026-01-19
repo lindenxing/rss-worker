@@ -3,6 +3,11 @@ main = "src/worker.js"
 node_compat = true
 compatibility_date = "2023-09-22"
 
+# Weibo Cookies for bypassing anti-crawler measures
+# Get cookies from your browser after logging in to weibo.com
+[vars]
+WEIBO_COOKIES = "WEIBOCN_FROM=1110006030; SUB=_2AkMeD3NQf8NxqwFRmv8SzGjgZIx-ww7EieKoU4KLJRM3HRl-yT9kqlwltRB6NY9dv0HlMQnrEJ7HgwEN-aiK4hotP8MM; SUBP=0033WrSXqPxfM72-Ws9jqgMF55529P9D9WhFFgmvIGN_KnOBuu39Lhrg; MLOGIN=0; _T_WM=79864565451; XSRF-TOKEN=889805; mweibo_short_token=4468dbb327; M_WEIBOCN_PARAMS=oid%3D5249642562324392%26luicode%3D10000011%26lfid%3D102803%26uicode%3D20000174"
+
 # [build]
 # command = "npm run build"
 # cwd = "dist"

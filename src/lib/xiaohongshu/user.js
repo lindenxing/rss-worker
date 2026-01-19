@@ -19,6 +19,9 @@ let getUser = async (url) => {
 		.transform(res);
 	await rewriter.text();
 	let script = scripts.find((script) => script.startsWith('window.__INITIAL_STATE__='));
+	if (!script) {
+		throw new Error('Failed to find user data in page');
+	}
 	script = script.slice('window.__INITIAL_STATE__='.length);
 	// replace undefined to null
 	script = script.replace(/undefined/g, 'null');
@@ -33,11 +36,16 @@ let deal = async (ctx) => {
 	const category = 'notes';
 	const url = `https://www.xiaohongshu.com/user/profile/${uid}`;
 
+	const userData = await getUser(url);
+	if (!userData || !userData.userPageData) {
+		throw new Error('Failed to fetch user data or user not found');
+	}
+
 	const {
 		userPageData: { basicInfo, interactions, tags },
 		notes,
 		collect,
-	} = await getUser(url);
+	} = userData;
 
 	const title = `${basicInfo.nickname} - ${category === 'notes' ? '笔记' : '收藏'} • 小红书 / RED`;
 	const description = `${basicInfo.desc} ${tags.map((t) => t.name).join(' ')} ${interactions.map((i) => `${i.count} ${i.name}`).join(' ')}`;
@@ -45,14 +53,17 @@ let deal = async (ctx) => {
 
 	const renderNote = (notes) =>
 		notes.flatMap((n) =>
-			n.map(({ noteCard }) => ({
-				title: noteCard.displayTitle,
-				link: `${url}/${noteCard.noteId}`,
-				guid: noteCard.displayTitle,
-				description: `<img src ="${noteCard.cover.infoList.pop().url}"><br>${noteCard.displayTitle}`,
-				author: noteCard.user.nickname,
-				upvotes: noteCard.interactInfo.likedCount,
-			}))
+			n.map(({ noteCard }) => {
+				const coverUrl = noteCard.cover?.infoList?.length > 0 ? noteCard.cover.infoList[noteCard.cover.infoList.length - 1].url : '';
+				return {
+					title: noteCard.displayTitle,
+					link: `${url}/${noteCard.noteId}`,
+					guid: noteCard.displayTitle,
+					description: coverUrl ? `<img src="${coverUrl}"><br>${noteCard.displayTitle}` : noteCard.displayTitle,
+					author: noteCard.user.nickname,
+					upvotes: noteCard.interactInfo.likedCount,
+				};
+			})
 		);
 	const renderCollect = (collect) => {
 		if (!collect) {
@@ -64,13 +75,16 @@ let deal = async (ctx) => {
 		if (!collect.data.notes.length) {
 			throw ctx.throw(403, '该用户已设置收藏内容不可见');
 		}
-		return collect.data.notes.map((item) => ({
-			title: item.display_title,
-			link: `${url}/${item.note_id}`,
-			description: `<img src ="${item.cover.info_list.pop().url}"><br>${item.display_title}`,
-			author: item.user.nickname,
-			upvotes: item.interact_info.likedCount,
-		}));
+		return collect.data.notes.map((item) => {
+			const coverUrl = item.cover?.info_list?.length > 0 ? item.cover.info_list[item.cover.info_list.length - 1].url : '';
+			return {
+				title: item.display_title,
+				link: `${url}/${item.note_id}`,
+				description: coverUrl ? `<img src="${coverUrl}"><br>${item.display_title}` : item.display_title,
+				author: item.user.nickname,
+				upvotes: item.interact_info.likedCount,
+			};
+		});
 	};
 
     ctx.header('Content-Type', 'application/xml');
