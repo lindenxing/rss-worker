@@ -12,6 +12,8 @@ RSSWorker 是一个轻量级的 RSS 订阅工具，可以部署在 Cloudflare Wo
 - weibo 用户 (/weibo/user/:uid)
 - 小红书用户 (/xiaohongshu/user/:uid)
 - 抖音用户 (/douyin/user/:uid)
+- 小宇宙播客 (/xiaoyuzhou/podcast/:id)
+- 小宇宙精选 (/xiaoyuzhou/pickup)
 
 > 小红书更新后不能再使用小红书号，需要使用小红书用户ID。  
 > 获取方法：  
@@ -23,6 +25,12 @@ RSSWorker 是一个轻量级的 RSS 订阅工具，可以部署在 Cloudflare Wo
 > 打开抖音网页版用户主页，URL 中的 `MS4wLjABAAAA...` 部分即为 UID  
 > 格式：https://www.douyin.com/user/MS4wLjABAAAARcAHmmF9mAG3JEixq_CdP72APhBlGlLVbN-1eBcPqao  
 > 注意：抖音有严格的反爬机制，建议配置 `DOUYIN_COOKIE` 环境变量以提高成功率
+
+> 小宇宙播客 ID 获取方法：  
+> 打开小宇宙网页版播客页面，URL 中最后一段即为播客 ID  
+> 格式：https://www.xiaoyuzhoufm.com/podcast/6021f949a789fca4eff4492c  
+> 注意：需要配置 `XIAOYUZHOU_ID` 和 `XIAOYUZHOU_TOKEN` 环境变量  
+> 详细配置说明请查看 [docs/XIAOYUZHOU_GUIDE.md](docs/XIAOYUZHOU_GUIDE.md)
 
 ## 部署
 
@@ -40,6 +48,13 @@ wrangler secret put WEIBO_COOKIES
 
 # 配置 Bilibili Cookies（格式：UID=COOKIE_STRING）
 wrangler secret put BILIBILI_COOKIES
+
+# 配置抖音 Cookie
+wrangler secret put DOUYIN_COOKIE
+
+# 配置小宇宙认证信息
+wrangler secret put XIAOYUZHOU_ID
+wrangler secret put XIAOYUZHOU_TOKEN
 ```
 
 #### 本地开发配置

@@ -14,3 +14,10 @@ BILIBILI_COOKIES="your_uid=your_cookie_string_here"
 # Douyin Cookies for bypassing anti-crawler measures (optional but recommended)
 # Get cookies from your browser after logging in to douyin.com
 DOUYIN_COOKIE="your_douyin_cookie_string_here"
+
+# Xiaoyuzhou (小宇宙) authentication credentials
+# Get these from network requests in browser DevTools after logging in to xiaoyuzhoufm.com
+# XIAOYUZHOU_ID: x-jike-device-id from request headers
+# XIAOYUZHOU_TOKEN: x-jike-refresh-token from request headers
+XIAOYUZHOU_ID="your_device_id_here"
+XIAOYUZHOU_TOKEN="your_refresh_token_here"
