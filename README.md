@@ -11,12 +11,18 @@ RSSWorker 是一个轻量级的 RSS 订阅工具，可以部署在 Cloudflare Wo
 - telegram 频道 (/telegram/channel/:username)
 - weibo 用户 (/weibo/user/:uid)
 - 小红书用户 (/xiaohongshu/user/:uid)
+- 抖音用户 (/douyin/user/:uid)
 
 > 小红书更新后不能再使用小红书号，需要使用小红书用户ID。  
 > 获取方法：  
 > 移动端：用户页面 > 右上角三个点 > 复制链接 > 获取链接中的用户ID  
 > 网页端：用户页面 > 链接中的用户ID  
 > 格式：https://www.xiaohongshu.com/user/profile/5d2aec020000000012037401
+
+> 抖音用户 UID 获取方法：  
+> 打开抖音网页版用户主页，URL 中的 `MS4wLjABAAAA...` 部分即为 UID  
+> 格式：https://www.douyin.com/user/MS4wLjABAAAARcAHmmF9mAG3JEixq_CdP72APhBlGlLVbN-1eBcPqao  
+> 注意：抖音有严格的反爬机制，建议配置 `DOUYIN_COOKIE` 环境变量以提高成功率
 
 ## 部署
 

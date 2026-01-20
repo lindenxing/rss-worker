@@ -10,3 +10,7 @@ WEIBO_COOKIES="WEIBOCN_FROM=xxx; SUB=xxx; SUBP=xxx; MLOGIN=0; _T_WM=xxx; XSRF-TO
 # Format: UID=COOKIE_STRING|UID=COOKIE_STRING (for multiple accounts)
 # Example: BILIBILI_COOKIES="1466714313=your_cookie_string_here"
 BILIBILI_COOKIES="your_uid=your_cookie_string_here"
+
+# Douyin Cookies for bypassing anti-crawler measures (optional but recommended)
+# Get cookies from your browser after logging in to douyin.com
+DOUYIN_COOKIE="your_douyin_cookie_string_here"

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>获取抖音 Cookie - RSS Worker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .step {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        .step h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        .step p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        .step code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        .step ol {
+            margin-left: 20px;
+            color: #666;
+            line-height: 1.8;
+        }
+        .step ol li {
+            margin-bottom: 8px;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .warning p {
+            color: #856404;
+            margin: 0;
+        }
+        .cookie-display {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .cookie-display h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .cookie-textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            resize: vertical;
+            background: white;
+        }
+        .cookie-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #218838;
+        }
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            display: none;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+        .info-box {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .info-box p {
+            color: #0c5460;
+            margin: 0;
+            line-height: 1.6;
+        }
+        .info-box a {
+            color: #0c5460;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍪 获取抖音 Cookie</h1>
+        <p class="subtitle">用于 RSS Worker 抖音路由配置</p>
+
+        <div class="warning">
+            <p>⚠️ <strong>重要提示</strong>：Cookie 包含敏感信息，请勿分享给他人。此工具仅在本地运行，不会上传任何数据。</p>
+        </div>
+
+        <div class="step">
+            <h3>📋 方法一：使用此工具自动获取（推荐）</h3>
+            <p>点击下方按钮，工具会自动获取当前页面的 Cookie：</p>
+            <div class="buttons">
+                <button class="btn btn-primary" onclick="getCookies()">🔍 获取 Cookie</button>
+                <button class="btn btn-secondary" onclick="clearCookies()">🗑️ 清空</button>
+            </div>
+            <div id="status" class="status"></div>
+        </div>
+
+        <div class="step">
+            <h3>📝 方法二：手动获取</h3>
+            <ol>
+                <li>打开 <a href="https://www.douyin.com" target="_blank">https://www.douyin.com</a> 并登录</li>
+                <li>按 <code>F12</code> 打开开发者工具</li>
+                <li>切换到 <code>Application</code>（应用）标签页</li>
+                <li>在左侧找到 <code>Cookies</code> → <code>https://www.douyin.com</code></li>
+                <li>复制所有 Cookie 值，格式如：<code>key1=value1; key2=value2; key3=value3</code></li>
+                <li>将 Cookie 粘贴到下方文本框中</li>
+            </ol>
+        </div>
+
+        <div class="cookie-display">
+            <h3>📄 Cookie 内容</h3>
+            <textarea id="cookieTextarea" class="cookie-textarea" placeholder="Cookie 将显示在这里..."></textarea>
+            <div class="buttons">
+                <button class="btn btn-success" onclick="copyCookie()">📋 复制到剪贴板</button>
+                <button class="btn btn-secondary" onclick="downloadCookie()">💾 下载为文件</button>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <p><strong>💡 使用说明：</strong></p>
+            <p>1. 复制 Cookie 后，打开项目根目录的 <code>.dev.vars</code> 文件</p>
+            <p>2. 将 Cookie 粘贴到 <code>DOUYIN_COOKIE=""</code> 的引号中</p>
+            <p>3. 保存文件，然后运行 <code>npm run dev</code> 启动本地开发服务器</p>
+            <p>4. 访问 <code>http://localhost:8787/rss/douyin/user/你的UID</code> 测试</p>
+        </div>
+    </div>
+
+    <script>
+        function getCookies() {
+            const status = document.getElementById('status');
+            const textarea = document.getElementById('cookieTextarea');
+            
+            try {
+                // 获取当前页面的所有 Cookie
+                const cookies = document.cookie;
+                
+                if (!cookies || cookies.trim() === '') {
+                    status.className = 'status error';
+                    status.textContent = '❌ 未找到 Cookie。请确保你在 douyin.com 页面上运行此工具。';
+                    return;
+                }
+                
+                textarea.value = cookies;
+                status.className = 'status success';
+                status.textContent = '✅ Cookie 获取成功！';
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = '❌ 获取 Cookie 失败：' + error.message;
+            }
+        }
+
+        function clearCookies() {
+            document.getElementById('cookieTextarea').value = '';
+            document.getElementById('status').style.display = 'none';
+        }
+
+        function copyCookie() {
+            const textarea = document.getElementById('cookieTextarea');
+            const status = document.getElementById('status');
+            
+            if (!textarea.value.trim()) {
+                status.className = 'status error';
+                status.textContent = '❌ 没有可复制的内容';
+                return;
+            }
+            
+            navigator.clipboard.writeText(textarea.value).then(() => {
+                status.className = 'status success';
+                status.textContent = '✅ 已复制到剪贴板！';
+            }).catch(err => {
+                // 降级方案
+                textarea.select();
+                document.execCommand('copy');
+                status.className = 'status success';
+                status.textContent = '✅ 已复制到剪贴板！';
+            });
+        }
+
+        function downloadCookie() {
+            const textarea = document.getElementById('cookieTextarea');
+            const status = document.getElementById('status');
+            
+            if (!textarea.value.trim()) {
+                status.className = 'status error';
+                status.textContent = '❌ 没有可下载的内容';
+                return;
+            }
+            
+            const blob = new Blob([textarea.value], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'douyin_cookie.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            status.className = 'status success';
+            status.textContent = '✅ 文件已下载！';
+        }
+
+        // 页面加载时检查是否在 douyin.com 域名下
+        window.addEventListener('load', () => {
+            const hostname = window.location.hostname;
+            if (!hostname.includes('douyin.com')) {
+                const status = document.getElementById('status');
+                status.className = 'status error';
+                status.innerHTML = '⚠️ <strong>提示</strong>：此工具需要在 douyin.com 页面上运行才能自动获取 Cookie。<br>请访问 <a href="https://www.douyin.com" target="_blank">https://www.douyin.com</a>，然后打开开发者工具的 Console（控制台），将此页面的代码粘贴进去运行。';
+            }
+        });
+    </script>
+</body>
+</html>

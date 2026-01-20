@@ -45,7 +45,20 @@ wrangler secret put BILIBILI_COOKIE_1466714313
 wrangler secret put BILIBILI_COOKIE_9876543210
 ```
 
-### 3. Verify Secrets
+### 3. Set Douyin Cookies (Optional)
+
+```powershell
+wrangler secret put DOUYIN_COOKIE
+```
+
+When prompted, paste your Douyin cookies string. Get it from:
+1. Login to douyin.com in your browser
+2. Open DevTools (F12) → Application → Cookies
+3. Copy the cookie string
+
+**Note**: Douyin has strict anti-crawling measures. While the route may work without cookies, providing a valid cookie significantly improves success rate.
+
+### 4. Verify Secrets
 
 ```powershell
 wrangler secret list
@@ -64,6 +77,7 @@ Copy-Item .dev.vars.example .dev.vars
 ```plaintext
 WEIBO_COOKIES="your_actual_weibo_cookies_here"
 BILIBILI_COOKIES="1466714313=your_actual_bilibili_cookie_here"
+DOUYIN_COOKIE="your_actual_douyin_cookie_here"
 ```
 
 ### 3. Run locally
@@ -89,6 +103,12 @@ Code location: [src/lib/weibo/user.js](src/lib/weibo/user.js)
 The worker uses `BILIBILI_COOKIES` to access the watchlater (稍后阅读) feature, which requires authentication.
 
 Code location: [src/lib/bilibili/user/watchlater.js](src/lib/bilibili/user/watchlater.js)
+
+### Douyin
+
+The worker uses `DOUYIN_COOKIE` to bypass anti-crawler measures when fetching Douyin user videos. Due to Douyin's strict anti-crawling policies, this cookie is highly recommended for stable operation.
+
+Code location: [src/lib/douyin/user.js](src/lib/douyin/user.js)
 
 ## Updating Secrets
 
