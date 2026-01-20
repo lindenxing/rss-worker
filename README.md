@@ -22,22 +22,51 @@ RSSWorker 是一个轻量级的 RSS 订阅工具，可以部署在 Cloudflare Wo
 
 [![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/yllhwa/RSSWorker)
 
-### 配置微博 Cookie（可选但推荐）
+### 安全配置（重要）
 
-由于微博的反爬虫机制，建议配置真实的 Cookie 以获得更稳定的访问：
+本项目需要配置敏感的 Cookie 信息。**请务必使用 Cloudflare Secrets 而不是直接写在配置文件中！**
+
+#### 生产环境配置
+
+```powershell
+# 配置微博 Cookies
+wrangler secret put WEIBO_COOKIES
+
+# 配置 Bilibili Cookies（格式：UID=COOKIE_STRING）
+wrangler secret put BILIBILI_COOKIES
+```
+
+#### 本地开发配置
+
+1. 复制示例文件：
+```powershell
+Copy-Item .dev.vars.example .dev.vars
+```
+
+2. 编辑 `.dev.vars` 文件，填入你的 Cookie 值
+
+3. 运行开发服务器：
+```powershell
+npm run dev
+```
+
+**详细配置说明请查看 [SECURITY.md](SECURITY.md)**
+
+### 获取 Cookie 的方法
+
+#### 微博 Cookie
 
 1. 在浏览器中登录 [weibo.com](https://weibo.com)
 2. 打开浏览器开发者工具（F12）
 3. 切换到 Network 标签页，刷新页面
 4. 找到任意请求，复制 Cookie 请求头的值
-5. 在 `wrangler.toml` 文件中配置：
 
-```toml
-[vars]
-WEIBO_COOKIES = "你的Cookie值"
-```
+#### Bilibili Cookie
 
-或者在 Cloudflare Workers 控制台中设置环境变量 `WEIBO_COOKIES`。
+1. 在浏览器中登录 [bilibili.com](https://www.bilibili.com)
+2. 打开浏览器开发者工具（F12）
+3. 切换到 Application → Cookies
+4. 复制所需的 Cookie 值
 
 ## 开发
 

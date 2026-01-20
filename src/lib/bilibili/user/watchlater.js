@@ -40,7 +40,7 @@ let deal = async (ctx) => {
   <channel>
     <title>Bilibili 稍后阅读 - 错误</title>
     <link>https://www.bilibili.com</link>
-    <description>稍后阅读功能需要登录 Cookie。请在 wrangler.toml 中配置 BILIBILI_COOKIES，格式为：UID=COOKIE_STRING</description>
+    <description>稍后阅读功能需要登录 Cookie。请使用 Cloudflare Secrets 配置：wrangler secret put BILIBILI_COOKIES (格式：UID=COOKIE_STRING) 或本地开发时在 .dev.vars 中配置。详见 SECURITY.md</description>
     <language>zh-cn</language>
   </channel>
 </rss>`);

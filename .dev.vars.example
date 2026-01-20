@@ -1,0 +1,12 @@
+# Local Development Environment Variables
+# Copy this file to .dev.vars and fill in your actual values
+# DO NOT commit .dev.vars to version control
+
+# Weibo Cookies for bypassing anti-crawler measures
+# Get cookies from your browser after logging in to weibo.com
+WEIBO_COOKIES="WEIBOCN_FROM=xxx; SUB=xxx; SUBP=xxx; MLOGIN=0; _T_WM=xxx; XSRF-TOKEN=xxx; mweibo_short_token=xxx; M_WEIBOCN_PARAMS=xxx"
+
+# Bilibili Cookies for watchlater feature
+# Format: UID=COOKIE_STRING|UID=COOKIE_STRING (for multiple accounts)
+# Example: BILIBILI_COOKIES="1466714313=your_cookie_string_here"
+BILIBILI_COOKIES="your_uid=your_cookie_string_here"
