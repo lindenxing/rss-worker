@@ -1,5 +1,5 @@
 name = "rss-worker"
-main = "src/worker.js"
+main = "dist/worker.js"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 # Weibo Cookies for bypassing anti-crawler measures

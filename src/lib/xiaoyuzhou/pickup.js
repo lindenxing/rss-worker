@@ -3,8 +3,9 @@ import { renderRss2 } from '../../utils/util';
 
 /**
  * 小宇宙精选路由
- * 获取小宇宙首页精选内容
+ * 获取小宇宙热门播客最新单集
  * 通过抓取网页数据实现，无需认证
+ * 注意：这不是真正的"每日精选"，而是从热门播客中获取最新单集
  */
 
 // 从网页中提取 __NEXT_DATA__
@@ -57,13 +58,13 @@ const formatDescription = (item) => {
 		description += `<strong>播客：</strong>${item.podcast.title}<br>`;
 	}
 	
-	// 添加推荐理由
+	// 添加推荐理由（精选的核心内容）
 	if (item.comment) {
 		description += `<br><strong>推荐理由：</strong><br>${item.comment.replace(/\n/g, '<br>')}<br>`;
 	}
 	
 	// 添加单集描述
-	const desc = item.episode?.shownotes || item.episode?.description || '';
+	const desc = item.episode?.description || '';
 	if (desc) {
 		description += `<br><strong>单集简介：</strong><br>${desc.replace(/\n/g, '<br>')}`;
 	}
@@ -90,8 +91,8 @@ const formatDescription = (item) => {
 
 let deal = async (ctx) => {
 	try {
-		// 小宇宙的精选内容可能需要登录才能访问
-		// 我们改用一个变通方案：抓取多个热门播客的最新单集
+		// 小宇宙的精选内容需要登录才能访问
+		// 我们使用变通方案：抓取多个热门播客的最新单集
 		const hotPodcasts = [
 			'6021f949a789fca4eff4492c', // 知行小酒馆
 			'613753ef0a1a89cf1e0ab0aa', // 随机波动
