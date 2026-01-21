@@ -73,17 +73,7 @@ let deal = async (ctx) => {
     <description>用户不存在或 API 响应无效。该用户可能不存在或需要登录才能查看。</description>
     <language>zh-cn</language>
   </channel>
-</return ctx.body(`<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0">
-  <channel>
-    <title>微博用户 - 错误</title>
-    <link>https://weibo.com/${uid}/</link>
-    <description>用户没有微博或 API 响应无效。</description>
-    <language>zh-cn</language>
-  </channel>
 </rss>`, 200, {
-			'Content-Type': 'application/xml; charset=utf-8',
-		}
 			'Content-Type': 'application/xml; charset=utf-8',
 		});
 	}
@@ -103,7 +93,7 @@ let deal = async (ctx) => {
   </channel>
 </rss>`, 200, {
 			'Content-Type': 'application/xml; charset=utf-8',
-		}
+		});
 	}
 	const containerId = weiboTab.containerid;
 
