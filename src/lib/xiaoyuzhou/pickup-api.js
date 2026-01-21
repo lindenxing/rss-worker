@@ -5,17 +5,48 @@ import { renderRss2 } from '../../utils/util';
  * 小宇宙精选路由（真正的每日精选版本）
  * 使用官方 API 获取小宇宙 App 中的每日精选内容
  * 需要认证信息：XIAOYUZHOU_ID 和 XIAOYUZHOU_TOKEN
+ * 
+ * 工作流程（参考 RSSHub）：
+ * 1. 使用 refresh_token 调用 /app_auth_tokens.refresh 获取 access_token
+ * 2. 使用 access_token 调用 /v1/editor-pick/list 获取精选数据
  */
 
-// 获取精选列表（官方 API）
-const getPickupListFromAPI = async (deviceId, token) => {
-	const response = await fetch('https://api.xiaoyuzhoufm.com/v1/pickup/list', {
+// 刷新 token 获取 access token
+const refreshAccessToken = async (deviceId, refreshToken) => {
+	const response = await fetch('https://api.xiaoyuzhoufm.com/app_auth_tokens.refresh', {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
-			'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+			'User-Agent': 'okhttp/4.7.2',
+			'applicationid': 'app.podcast.cosmos',
+			'app-version': '1.6.0',
 			'x-jike-device-id': deviceId,
-			'x-jike-refresh-token': token,
+			'x-jike-refresh-token': refreshToken,
+		},
+	});
+	
+	if (!response.ok) {
+		throw new Error(`Failed to refresh token: HTTP ${response.status}`);
+	}
+	
+	const data = await response.json();
+	return {
+		accessToken: data['x-jike-access-token'],
+		refreshToken: data['x-jike-refresh-token'],
+	};
+};
+
+// 获取精选列表（官方 API）
+const getPickupListFromAPI = async (deviceId, accessToken) => {
+	const response = await fetch('https://api.xiaoyuzhoufm.com/v1/editor-pick/list', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'User-Agent': 'okhttp/4.7.2',
+			'applicationid': 'app.podcast.cosmos',
+			'app-version': '1.6.0',
+			'x-jike-device-id': deviceId,
+			'x-jike-access-token': accessToken,
 		},
 		body: JSON.stringify({
 			limit: 20,
@@ -28,40 +59,6 @@ const getPickupListFromAPI = async (deviceId, token) => {
 	
 	const data = await response.json();
 	return data;
-};
-
-// 从网页中提取 __NEXT_DATA__（备用方案）
-const getPageData = async (url) => {
-	const response = await fetch(url, {
-		headers: {
-			'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-			'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-			'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-			'Accept-Encoding': 'gzip, deflate, br',
-			'Referer': 'https://www.xiaoyuzhoufm.com/',
-			'DNT': '1',
-			'Connection': 'keep-alive',
-			'Upgrade-Insecure-Requests': '1',
-			'Sec-Fetch-Dest': 'document',
-			'Sec-Fetch-Mode': 'navigate',
-			'Sec-Fetch-Site': 'same-origin',
-			'Cache-Control': 'max-age=0',
-		},
-	});
-	
-	if (!response.ok) {
-		throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-	}
-	
-	const html = await response.text();
-	
-	// 提取 __NEXT_DATA__ 中的 JSON 数据
-	const match = html.match(/<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/);
-	if (!match) {
-		throw new Error('Failed to find __NEXT_DATA__ in page');
-	}
-	
-	return JSON.parse(match[1]);
 };
 
 // 格式化单集描述
@@ -111,113 +108,47 @@ const formatDescription = (item) => {
 	return description;
 };
 
-// 使用备用方案（网页抓取）
-const getFallbackData = async () => {
-	const hotPodcasts = [
-		'6021f949a789fca4eff4492c', // 知行小酒馆
-		'613753ef0a1a89cf1e0ab0aa', // 随机波动
-		'6048fa9bde0c7ee375cf4216', // 声东击西
-		'60d2a6e8a789fca4eff49ac0', // 忽左忽右
-		'5e280fa7418a84a0461f912b', // 故事FM
-	];
-	
-	const allEpisodes = [];
-	
-	await Promise.all(
-		hotPodcasts.map(async (pid) => {
-			try {
-				const podcastUrl = `https://www.xiaoyuzhoufm.com/podcast/${pid}`;
-				const pageData = await getPageData(podcastUrl);
-				const podcast = pageData.props?.pageProps?.podcast;
-				
-				if (podcast && podcast.episodes && podcast.episodes.length > 0) {
-					const latestEpisodes = podcast.episodes.slice(0, 2).map(episode => ({
-						episode,
-						podcast: {
-							title: podcast.title,
-							author: podcast.author,
-							pid: podcast.pid,
-						},
-					}));
-					allEpisodes.push(...latestEpisodes);
-				}
-			} catch (err) {
-				console.error(`Failed to fetch podcast ${pid}:`, err.message);
-			}
-		})
-	);
-	
-	allEpisodes.sort((a, b) => new Date(b.episode.pubDate) - new Date(a.episode.pubDate));
-	return allEpisodes.slice(0, 20);
-};
-
 let deal = async (ctx) => {
 	try {
 		const deviceId = ctx.env?.XIAOYUZHOU_ID;
-		const token = ctx.env?.XIAOYUZHOU_TOKEN;
+		const refreshToken = ctx.env?.XIAOYUZHOU_TOKEN;
 		
-		let items = [];
-		let title = '小宇宙精选';
-		let description = '小宇宙每日精选播客单集';
-		
-		// 尝试使用 API 获取真正的精选
-		if (deviceId && token) {
-			try {
-				const data = await getPickupListFromAPI(deviceId, token);
-				
-				if (data.data && data.data.length > 0) {
-					// 成功获取到精选数据
-					items = data.data.map(item => ({
-						title: `${item.episode.title} - ${item.podcast.title}`,
-						link: `https://www.xiaoyuzhoufm.com/episode/${item.episode.eid}`,
-						description: formatDescription(item),
-						pubDate: parseDate(item.episode.pubDate),
-						guid: item.episode.eid,
-						author: item.podcast.author || item.podcast.title,
-						enclosure: item.episode.enclosure?.url ? {
-							url: item.episode.enclosure.url,
-							type: 'audio/mpeg',
-							length: item.episode.enclosure.length || 0,
-						} : undefined,
-					}));
-					
-					title = '小宇宙每日精选';
-					description = `小宇宙官方精选播客单集（共 ${items.length} 个）`;
-				}
-			} catch (apiError) {
-				console.error('API call failed, falling back to web scraping:', apiError.message);
-				// API 失败，使用备用方案
-			}
+		// 检查认证信息
+		if (!deviceId || !refreshToken) {
+			throw new Error('Missing XIAOYUZHOU_ID or XIAOYUZHOU_TOKEN environment variables. Please configure authentication.');
 		}
 		
-		// 如果 API 失败或没有配置认证信息，使用备用方案
-		if (items.length === 0) {
-			const fallbackData = await getFallbackData();
-			
-			items = fallbackData.map(item => ({
-				title: `${item.episode.title} - ${item.podcast.title}`,
-				link: `https://www.xiaoyuzhoufm.com/episode/${item.episode.eid}`,
-				description: formatDescription(item),
-				pubDate: parseDate(item.episode.pubDate),
-				guid: item.episode.eid,
-				author: item.podcast.author || item.podcast.title,
-				enclosure: item.episode.enclosure?.url ? {
-					url: item.episode.enclosure.url,
-					type: 'audio/mpeg',
-					length: item.episode.enclosure.length || 0,
-				} : undefined,
-			}));
-			
-			title = '小宇宙精选（热门播客）';
-			description = '小宇宙热门播客最新单集（备用方案）';
+		// 第一步：刷新 token 获取 access token
+		const tokens = await refreshAccessToken(deviceId, refreshToken);
+		
+		// 第二步：使用 access token 获取精选数据
+		const data = await getPickupListFromAPI(deviceId, tokens.accessToken);
+		
+		if (!data.data || data.data.length === 0) {
+			throw new Error('No pickup data returned from API');
 		}
+		
+		// 转换为 RSS 格式
+		const items = data.data.map(item => ({
+			title: `${item.episode.title} - ${item.podcast.title}`,
+			link: `https://www.xiaoyuzhoufm.com/episode/${item.episode.eid}`,
+			description: formatDescription(item),
+			pubDate: parseDate(item.episode.pubDate),
+			guid: item.episode.eid,
+			author: item.podcast.author || item.podcast.title,
+			enclosure: item.episode.enclosure?.url ? {
+				url: item.episode.enclosure.url,
+				type: 'audio/mpeg',
+				length: item.episode.enclosure.length || 0,
+			} : undefined,
+		}));
 		
 		ctx.header('Content-Type', 'application/xml');
 		return ctx.text(
 			renderRss2({
-				title,
+				title: '小宇宙每日精选',
 				link: 'https://www.xiaoyuzhoufm.com',
-				description,
+				description: `小宇宙官方精选播客单集（共 ${items.length} 个）`,
 				language: 'zh-cn',
 				category: 'podcast',
 				items,
