@@ -37,8 +37,27 @@ let getPubDate = (ptimeLabelText) => {
 
 let deal = async (ctx) => {
 	const { uid } = ctx.req.param();
-	let dynSpaceResJson = await GetDynSpace(uid);
-	let dynSpaceRes = JSON.parse(dynSpaceResJson);
+	let dynSpaceResJson;
+	let dynSpaceRes;
+	
+	try {
+		dynSpaceResJson = await GetDynSpace(uid);
+		dynSpaceRes = JSON.parse(dynSpaceResJson);
+	} catch (error) {
+		// 如果 gRPC 请求失败，返回一个包含错误信息的 RSS
+		return ctx.body(`<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Bilibili 用户视频 - 错误</title>
+    <link>https://space.bilibili.com/${uid}/video</link>
+    <description>无法获取用户 ${uid} 的视频数据。错误: ${error.message}</description>
+    <language>zh-cn</language>
+  </channel>
+</rss>`, 200, {
+			'Content-Type': 'application/xml; charset=utf-8',
+		});
+	}
+	
 	let items = [];
 	let globalUsername = '';
 	if (dynSpaceRes.list.length !== 0) {
@@ -106,8 +125,9 @@ let deal = async (ctx) => {
 		items: items,
 	};
 	let rss = renderRss2(data);
-	ctx.header('Content-Type', 'application/xml');
-	return ctx.body(`${rss}`);
+	return ctx.body(rss, 200, {
+		'Content-Type': 'application/xml; charset=utf-8',
+	});
 };
 
 let setup = (route) => {

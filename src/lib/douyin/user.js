@@ -192,7 +192,18 @@ const deal = async (ctx) => {
 	}
 	
 	if (!videoData || !videoData.aweme_list || videoData.aweme_list.length === 0) {
-		throw new Error('Failed to fetch user videos. This may be due to anti-crawling measures. Please try again later or provide a valid DOUYIN_COOKIE.');
+		// 返回一个包含错误信息的 RSS，而不是抛出异常
+		return ctx.body(`<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>抖音用户视频 - 错误</title>
+    <link>https://www.douyin.com/user/${uid}</link>
+    <description>无法获取用户 ${uid} 的视频数据。这可能是由于反爬虫机制导致的。请稍后重试或提供有效的 DOUYIN_COOKIE。</description>
+    <language>zh-cn</language>
+  </channel>
+</rss>`, 200, {
+			'Content-Type': 'application/xml; charset=utf-8',
+		});
 	}
 	
 	// 获取用户信息
@@ -204,15 +215,18 @@ const deal = async (ctx) => {
 	// 格式化视频列表
 	const items = videoData.aweme_list.map(video => formatVideoItem(video, embed));
 	
-	ctx.header('Content-Type', 'application/xml');
-	return ctx.text(
+	return ctx.body(
 		renderRss2({
 			title: `${userName} - 抖音`,
 			description: userDesc,
 			image: userAvatar,
 			link: `https://www.douyin.com/user/${uid}`,
 			items,
-		})
+		}),
+		200,
+		{
+			'Content-Type': 'application/xml; charset=utf-8',
+		}
 	);
 };
 

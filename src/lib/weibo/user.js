@@ -65,7 +65,27 @@ let deal = async (ctx) => {
 	}
 
 	if (!containerData.data || !containerData.data.userInfo || !containerData.data.tabsInfo || !containerData.data.tabsInfo.tabs) {
-		throw new Error('User not found or API response invalid. The user may not exist or requires login to view.');
+		return ctx.body(`<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>微博用户 - 错误</title>
+    <link>https://weibo.com/${uid}/</link>
+    <description>用户不存在或 API 响应无效。该用户可能不存在或需要登录才能查看。</description>
+    <language>zh-cn</language>
+  </channel>
+</return ctx.body(`<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>微博用户 - 错误</title>
+    <link>https://weibo.com/${uid}/</link>
+    <description>用户没有微博或 API 响应无效。</description>
+    <language>zh-cn</language>
+  </channel>
+</rss>`, 200, {
+			'Content-Type': 'application/xml; charset=utf-8',
+		}
+			'Content-Type': 'application/xml; charset=utf-8',
+		});
 	}
 
 	const name = containerData.data.userInfo.screen_name;
@@ -73,7 +93,17 @@ let deal = async (ctx) => {
 	const profileImageUrl = containerData.data.userInfo.profile_image_url;
 	const weiboTab = containerData.data.tabsInfo.tabs.filter((item) => item.tab_type === 'weibo')[0];
 	if (!weiboTab) {
-		throw new Error('User has no weibo posts or API response invalid');
+		return ctx.body(`<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>微博用户 - 错误</title>
+    <link>https://weibo.com/${uid}/</link>
+    <description>无法获取用户微博或 API 响应无效。该用户可能没有微博或需要登录才能查看。</description>
+    <language>zh-cn</language>
+  </channel>
+</rss>`, 200, {
+			'Content-Type': 'application/xml; charset=utf-8',
+		}
 	}
 	const containerId = weiboTab.containerid;
 
@@ -189,8 +219,9 @@ let deal = async (ctx) => {
 		image: profileImageUrl,
 		items: resultItems,
 	});
-	ctx.header('Content-Type', 'application/xml');
-	return ctx.body(renderRss2(finalData));
+	return ctx.body(renderRss2(finalData), 200, {
+		'Content-Type': 'application/xml; charset=utf-8',
+	});
 };
 
 let setup = (route) => {

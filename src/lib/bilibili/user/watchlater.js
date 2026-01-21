@@ -34,7 +34,6 @@ let deal = async (ctx) => {
 	}
 	
 	if (!cookie) {
-		ctx.header('Content-Type', 'application/xml');
 		return ctx.body(`<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
   <channel>
@@ -43,7 +42,9 @@ let deal = async (ctx) => {
     <description>稍后阅读功能需要登录 Cookie。请使用 Cloudflare Secrets 配置：wrangler secret put BILIBILI_COOKIES (格式：UID=COOKIE_STRING) 或本地开发时在 .dev.vars 中配置。详见 SECURITY.md</description>
     <language>zh-cn</language>
   </channel>
-</rss>`);
+</rss>`, 200, {
+			'Content-Type': 'application/xml; charset=utf-8',
+		});
 	}
 
 	try {
@@ -58,7 +59,6 @@ let deal = async (ctx) => {
 		const data = await response.json();
 
 		if (data.code !== 0) {
-			ctx.header('Content-Type', 'application/xml');
 			return ctx.body(`<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
   <channel>
@@ -67,7 +67,9 @@ let deal = async (ctx) => {
     <description>API 错误: ${data.message || '未知错误'}</description>
     <language>zh-cn</language>
   </channel>
-</rss>`);
+</rss>`, 200, {
+				'Content-Type': 'application/xml; charset=utf-8',
+			});
 		}
 
 		const list = data.data.list || [];
@@ -112,12 +114,11 @@ let deal = async (ctx) => {
 			items: items,
 		};
 
-		let rss = renderRss2(rssData);
-		ctx.header('Content-Type', 'application/xml');
-		return ctx.body(`${rss}`);
+		return ctx.body(rss, 200, {
+			'Content-Type': 'application/xml; charset=utf-8',
+		});
 	} catch (e) {
 		console.error('Error fetching watchlater:', e);
-		ctx.header('Content-Type', 'application/xml');
 		return ctx.body(`<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
   <channel>
@@ -126,6 +127,9 @@ let deal = async (ctx) => {
     <description>获取稍后阅读列表失败: ${e.message}</description>
     <language>zh-cn</language>
   </channel>
+</rss>`, 200, {
+			'Content-Type': 'application/xml; charset=utf-8',
+		}nnel>
 </rss>`);
 	}
 };

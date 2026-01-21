@@ -38,7 +38,17 @@ let deal = async (ctx) => {
 
 	const userData = await getUser(url);
 	if (!userData || !userData.userPageData) {
-		throw new Error('Failed to fetch user data or user not found');
+		return ctx.body(`<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>小红书用户 - 错误</title>
+    <link>${url}</link>
+    <description>无法获取用户数据或用户不存在。</description>
+    <language>zh-cn</language>
+  </channel>
+</rss>`, 200, {
+			'Content-Type': 'application/xml; charset=utf-8',
+		});
 	}
 
 	const {
@@ -87,15 +97,18 @@ let deal = async (ctx) => {
 		});
 	};
 
-    ctx.header('Content-Type', 'application/xml');
-	return ctx.text(
+	return ctx.body(
 		renderRss2({
 			title,
 			description,
 			image,
 			link: url,
 			items: category === 'notes' ? renderNote(notes) : renderCollect(collect),
-		})
+		}),
+		200,
+		{
+			'Content-Type': 'application/xml; charset=utf-8',
+		}
 	);
 };
 

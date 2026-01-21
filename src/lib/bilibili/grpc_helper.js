@@ -240,13 +240,23 @@ let GetDynSpace = async (uid, accessKey = '') => {
 	let headers = getHeaders(accessKey);
 	let retry_max = 3;
 	let dynSpaceRsp = new DynSpaceRsp();
+	let lastError = null;
+	
 	for (let i = 0; i < retry_max; i++) {
 		try {
-			let rsp = await my_fetch(url, {
+			// 添加超时控制
+			const timeoutPromise = new Promise((_, reject) => {
+				setTimeout(() => reject(new Error('Request timeout after 15 seconds')), 15000);
+			});
+			
+			const fetchPromise = my_fetch(url, {
 				method: 'POST',
 				headers: headers,
 				body: dataToGrpc(req_bin),
 			});
+			
+			let rsp = await Promise.race([fetchPromise, timeoutPromise]);
+			
 			// string 转为 Uint8Array
 			rsp = rsp.slice(5);
 			let rsp_bin = new Uint8Array(rsp.length);
@@ -256,10 +266,19 @@ let GetDynSpace = async (uid, accessKey = '') => {
 			dynSpaceRsp.fromBinary(rsp_bin);
 			break;
 		} catch (e) {
-			throw e;
-			// 由于 http2 不关闭连接，而我们实现的 grpc 有问题，所以重试一下
+			lastError = e;
+			console.error(`[Bilibili gRPC] Attempt ${i + 1} failed:`, e.message);
+			// 如果不是最后一次重试，等待一下再重试
+			if (i < retry_max - 1) {
+				await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+			}
 		}
 	}
+	
+	if (lastError && !dynSpaceRsp.list) {
+		throw new Error(`Failed to fetch Bilibili data after ${retry_max} attempts: ${lastError.message}`);
+	}
+	
 	return dynSpaceRsp.toJsonString();
 };
 

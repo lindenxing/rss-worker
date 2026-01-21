@@ -176,11 +176,21 @@ let deal = async (ctx) => {
 			}];
 		}
 	} catch (error) {
-		throw new Error(`Failed to fetch podcast data: ${error.message}`);
+		// 返回一个包含错误信息的 RSS，而不是抛出异常
+		return ctx.body(`<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>小宇宙播客 - 错误</title>
+    <link>https://www.xiaoyuzhoufm.com/podcast/${id}</link>
+    <description>无法获取播客 ${id} 的数据。错误: ${error.message}</description>
+    <language>zh-cn</language>
+  </channel>
+</rss>`, 200, {
+			'Content-Type': 'application/xml; charset=utf-8',
+		});
 	}
 	
-	ctx.header('Content-Type', 'application/xml');
-	return ctx.text(
+	return ctx.body(
 		renderRss2({
 			title,
 			link,
@@ -188,7 +198,11 @@ let deal = async (ctx) => {
 			language: 'zh-cn',
 			category: 'podcast',
 			items,
-		})
+		}),
+		200,
+		{
+			'Content-Type': 'application/xml; charset=utf-8',
+		}
 	);
 };
 

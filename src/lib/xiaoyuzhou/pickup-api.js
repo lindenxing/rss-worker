@@ -166,8 +166,7 @@ let deal = async (ctx) => {
 			};
 		});
 		
-		ctx.header('Content-Type', 'application/xml');
-		return ctx.text(
+		return ctx.body(
 			renderRss2({
 				title: '小宇宙每日精选',
 				link: 'https://www.xiaoyuzhoufm.com',
@@ -175,10 +174,25 @@ let deal = async (ctx) => {
 				language: 'zh-cn',
 				category: 'podcast',
 				items,
-			})
+			}),
+			200,
+			{
+				'Content-Type': 'application/xml; charset=utf-8',
+			}
 		);
 	} catch (error) {
-		throw new Error(`Failed to fetch pickup data: ${error.message}`);
+		// 返回一个包含错误信息的 RSS，而不是抛出异常
+		return ctx.body(`<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>小宇宙每日精选 - 错误</title>
+    <link>https://www.xiaoyuzhoufm.com</link>
+    <description>无法获取小宇宙精选数据。错误: ${error.message}</description>
+    <language>zh-cn</language>
+  </channel>
+</rss>`, 200, {
+			'Content-Type': 'application/xml; charset=utf-8',
+		});
 	}
 };
 

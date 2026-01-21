@@ -3,7 +3,23 @@ import { substr } from 'runes2';
 
 let deal = async (ctx) => {
 	const { username } = ctx.req.param();
-	let res = await fetch(`https://t.me/s/${username}`);
+	let res;
+	try {
+		res = await fetch(`https://t.me/s/${username}`);
+	} catch (error) {
+		return ctx.body(`<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Telegram 频道 - 错误</title>
+    <link>https://t.me/s/${username}</link>
+    <description>无法获取 Telegram 频道 ${username} 的数据。错误: ${error.message}</description>
+    <language>zh-cn</language>
+  </channel>
+</rss>`, 200, {
+			'Content-Type': 'application/xml; charset=utf-8',
+		});
+	}
+	
 	let title = '';
 	let link = `https://t.me/s/${username}`;
 	let description = '';
@@ -118,8 +134,9 @@ let deal = async (ctx) => {
 		language: language,
 		items: items,
 	};
-	ctx.header('Content-Type', 'application/xml');
-	return ctx.body(renderRss2(data));
+	return ctx.body(renderRss2(data), 200, {
+		'Content-Type': 'application/xml; charset=utf-8',
+	});
 };
 
 let setup = (route) => {
