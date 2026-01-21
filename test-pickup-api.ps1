@@ -54,7 +54,9 @@ try {
     
     Write-Host "  ✅ 精选数据获取成功！" -ForegroundColor Green
     Write-Host ""
-    Write-Host "📊 返回数据：" -ForegroundColor Yellow
+    Write-Host "📊 返回数据结构：" -ForegroundColor Yellow
+    Write-Host ($pickupResponse | ConvertTo-Json -Depth 5) -ForegroundColor Gray
+    Write-Host ""
     Write-Host "  - 精选数量: $($pickupResponse.data.Count)" -ForegroundColor White
     Write-Host ""
     

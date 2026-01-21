@@ -78,8 +78,9 @@ const formatDescription = (item) => {
 	}
 	
 	// 添加推荐理由（精选的核心内容）
-	if (item.comment) {
-		description += `<br><strong>📌 推荐理由：</strong><br>${item.comment.replace(/\n/g, '<br>')}<br>`;
+	// comment 是一个对象，需要访问 text 字段
+	if (item.comment && item.comment.text) {
+		description += `<br><strong>📌 推荐理由：</strong><br>${item.comment.text.replace(/\n/g, '<br>')}<br>`;
 	}
 	
 	// 添加单集描述
@@ -128,20 +129,42 @@ let deal = async (ctx) => {
 			throw new Error('No pickup data returned from API');
 		}
 		
+		// API 返回的数据是按日期分组的，需要展平
+		// data.data 是一个数组，每个元素包含 date 和 picks
+		const allPicks = [];
+		for (const dayData of data.data) {
+			if (dayData.picks && Array.isArray(dayData.picks)) {
+				allPicks.push(...dayData.picks);
+			}
+		}
+		
+		if (allPicks.length === 0) {
+			throw new Error('No pickup data returned from API');
+		}
+		
 		// 转换为 RSS 格式
-		const items = data.data.map(item => ({
-			title: `${item.episode.title} - ${item.podcast.title}`,
-			link: `https://www.xiaoyuzhoufm.com/episode/${item.episode.eid}`,
-			description: formatDescription(item),
-			pubDate: parseDate(item.episode.pubDate),
-			guid: item.episode.eid,
-			author: item.podcast.author || item.podcast.title,
-			enclosure: item.episode.enclosure?.url ? {
-				url: item.episode.enclosure.url,
-				type: 'audio/mpeg',
-				length: item.episode.enclosure.length || 0,
-			} : undefined,
-		}));
+		const items = allPicks.map(pick => {
+			const episode = pick.episode;
+			const podcast = episode.podcast;
+			
+			return {
+				title: `${episode.title} - ${podcast.title}`,
+				link: `https://www.xiaoyuzhoufm.com/episode/${episode.eid}`,
+				description: formatDescription({
+					episode,
+					podcast,
+					comment: pick.comment
+				}),
+				pubDate: parseDate(episode.pubDate),
+				guid: episode.eid,
+				author: podcast.author || podcast.title,
+				enclosure: episode.enclosure?.url ? {
+					url: episode.enclosure.url,
+					type: 'audio/mpeg',
+					length: episode.enclosure.length || 0,
+				} : undefined,
+			};
+		});
 		
 		ctx.header('Content-Type', 'application/xml');
 		return ctx.text(
