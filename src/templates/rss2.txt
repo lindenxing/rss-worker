@@ -16,7 +16,7 @@
         <pubDate>{{pubDate}}</pubDate>
         {{/pubDate}}
         {{#guid}}
-        <guid>{{guid}}</guid>
+        <guid isPermaLink="false">{{guid}}</guid>
         {{/guid}}
         {{#author}}
         <author>{{author}}</author>
