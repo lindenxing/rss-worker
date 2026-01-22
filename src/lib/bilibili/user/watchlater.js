@@ -106,14 +106,25 @@ let deal = async (ctx) => {
 			});
 		}
 
+		// 去重：基于guid字段，保留第一次出现的条目
+		let seenGuids = new Set();
+		let uniqueItems = [];
+		for (let item of items) {
+			if (!seenGuids.has(item.guid)) {
+				seenGuids.add(item.guid);
+				uniqueItems.push(item);
+			}
+		}
+
 		let rssData = {
 			title: `Bilibili 稍后阅读`,
 			link: 'https://www.bilibili.com/watchlater#/list',
 			description: `Bilibili 稍后阅读列表`,
 			language: 'zh-cn',
-			items: items,
+			items: uniqueItems,
 		};
 
+		let rss = renderRss2(rssData);
 		return ctx.body(rss, 200, {
 			'Content-Type': 'application/xml; charset=utf-8',
 		});

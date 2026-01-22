@@ -143,7 +143,7 @@ let deal = async (ctx) => {
 		}
 		
 		// 转换为 RSS 格式
-		const items = allPicks.map(pick => {
+		const allItems = allPicks.map(pick => {
 			const episode = pick.episode;
 			const podcast = episode.podcast;
 			
@@ -164,6 +164,16 @@ let deal = async (ctx) => {
 					length: episode.enclosure.length || 0,
 				} : undefined,
 			};
+		});
+		
+		// 去重：基于eid
+		const seenEids = new Set();
+		const items = allItems.filter(item => {
+			if (!seenEids.has(item.guid)) {
+				seenEids.add(item.guid);
+				return true;
+			}
+			return false;
 		});
 		
 		return ctx.body(

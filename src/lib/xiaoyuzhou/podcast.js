@@ -144,7 +144,15 @@ let deal = async (ctx) => {
 				})
 			);
 			
-			items = episodes;
+			// 去重：基于eid
+			const seenEids = new Set();
+			items = episodes.filter(ep => {
+				if (!seenEids.has(ep.guid)) {
+					seenEids.add(ep.guid);
+					return true;
+				}
+				return false;
+			});
 		} catch (podcastError) {
 			// 如果作为播客 ID 失败，尝试作为单集 ID
 			const episodeUrl = `https://www.xiaoyuzhoufm.com/episode/${id}`;

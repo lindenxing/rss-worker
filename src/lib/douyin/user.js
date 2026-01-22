@@ -213,7 +213,17 @@ const deal = async (ctx) => {
 	const userDesc = userInfo.signature || '';
 	
 	// 格式化视频列表
-	const items = videoData.aweme_list.map(video => formatVideoItem(video, embed));
+	const allItems = videoData.aweme_list.map(video => formatVideoItem(video, embed));
+	
+	// 去重：基于videoId（guid）
+	const seenIds = new Set();
+	const items = allItems.filter(item => {
+		if (!seenIds.has(item.guid)) {
+			seenIds.add(item.guid);
+			return true;
+		}
+		return false;
+	});
 	
 	return ctx.body(
 		renderRss2({

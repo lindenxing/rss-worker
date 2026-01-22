@@ -127,12 +127,23 @@ let deal = async (ctx) => {
 		items.push(item);
 	}
 	items = items.reverse();
+	
+	// 去重：基于link字段
+	let seenLinks = new Set();
+	let uniqueItems = [];
+	for (let item of items) {
+		if (item.link && !seenLinks.has(item.link)) {
+			seenLinks.add(item.link);
+			uniqueItems.push(item);
+		}
+	}
+	
 	let data = {
 		title: title,
 		link: link,
 		description: description,
 		language: language,
-		items: items,
+		items: uniqueItems,
 	};
 	return ctx.body(renderRss2(data), 200, {
 		'Content-Type': 'application/xml; charset=utf-8',

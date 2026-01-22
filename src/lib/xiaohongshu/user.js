@@ -61,20 +61,30 @@ let deal = async (ctx) => {
 	const description = `${basicInfo.desc} ${tags.map((t) => t.name).join(' ')} ${interactions.map((i) => `${i.count} ${i.name}`).join(' ')}`;
 	const image = basicInfo.imageb || basicInfo.images;
 
-	const renderNote = (notes) =>
-		notes.flatMap((n) =>
+	const renderNote = (notes) => {
+		const allNotes = notes.flatMap((n) =>
 			n.map(({ noteCard }) => {
 				const coverUrl = noteCard.cover?.infoList?.length > 0 ? noteCard.cover.infoList[noteCard.cover.infoList.length - 1].url : '';
 				return {
 					title: noteCard.displayTitle,
 					link: `${url}/${noteCard.noteId}`,
-					guid: noteCard.displayTitle,
+					guid: noteCard.noteId,
 					description: coverUrl ? `<img src="${coverUrl}"><br>${noteCard.displayTitle}` : noteCard.displayTitle,
 					author: noteCard.user.nickname,
 					upvotes: noteCard.interactInfo.likedCount,
 				};
 			})
 		);
+		// 去重：基于noteId
+		const seenIds = new Set();
+		return allNotes.filter(note => {
+			if (!seenIds.has(note.guid)) {
+				seenIds.add(note.guid);
+				return true;
+			}
+			return false;
+		});
+	};
 	const renderCollect = (collect) => {
 		if (!collect) {
 			throw Error('该用户已设置收藏内容不可见');

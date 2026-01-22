@@ -116,13 +116,26 @@ let deal = async (ctx) => {
 		items.push(item);
 	}
 
+	// 去重：基于bvid或guid，保留第一次出现的条目
+	// 使用bvid作为主要标识，因为同一视频可能有多个动态ID
+	let seenVideos = new Set();
+	let uniqueItems = [];
+	for (let item of items) {
+		// 从link中提取bvid作为唯一标识
+		let videoId = item.link.match(/\/video\/(BV[a-zA-Z0-9]+)/)?.[1] || item.guid;
+		if (!seenVideos.has(videoId)) {
+			seenVideos.add(videoId);
+			uniqueItems.push(item);
+		}
+	}
+
 	let data = {
 		title: `${globalUsername} 的 bilibili 视频`,
 		link: `https://space.bilibili.com/${uid}/video`,
 		description: `${globalUsername} 的 bilibili 视频`,
 		language: 'zh-cn',
 		// category: 'bilibili',
-		items: items,
+		items: uniqueItems,
 	};
 	let rss = renderRss2(data);
 	return ctx.body(rss, 200, {

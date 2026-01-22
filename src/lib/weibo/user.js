@@ -202,12 +202,22 @@ let deal = async (ctx) => {
 		resultItems = ordinaryItems;
 	}
 
+	// 去重：基于guid字段，保留第一次出现的条目
+	let seenGuids = new Set();
+	let uniqueItems = [];
+	for (let item of resultItems) {
+		if (item.guid && !seenGuids.has(item.guid)) {
+			seenGuids.add(item.guid);
+			uniqueItems.push(item);
+		}
+	}
+
 	const finalData = weiboUtils.sinaimgTvax({
 		title: `${name}的微博`,
 		link: `https://weibo.com/${uid}/`,
 		description,
 		image: profileImageUrl,
-		items: resultItems,
+		items: uniqueItems,
 	});
 	return ctx.body(renderRss2(finalData), 200, {
 		'Content-Type': 'application/xml; charset=utf-8',
