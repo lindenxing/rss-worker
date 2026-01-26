@@ -116,18 +116,20 @@ let deal = async (ctx) => {
 		items.push(item);
 	}
 
-	// 去重：基于bvid或guid，保留第一次出现的条目
-	// 使用bvid作为主要标识，因为同一视频可能有多个动态ID
-	let seenVideos = new Set();
-	let uniqueItems = [];
+	// 去重：基于bvid作为唯一标识，保留最新发布的条目
+	// 优先使用bvid，如果没有则使用动态ID
+	let videoMap = new Map();
 	for (let item of items) {
-		// 从link中提取bvid作为唯一标识
-		let videoId = item.link.match(/\/video\/(BV[a-zA-Z0-9]+)/)?.[1] || item.guid;
-		if (!seenVideos.has(videoId)) {
-			seenVideos.add(videoId);
-			uniqueItems.push(item);
+		// 从link中提取bvid
+		let bvidMatch = item.link.match(/\/video\/(BV[a-zA-Z0-9]+)/);
+		let videoId = bvidMatch ? bvidMatch[1] : item.guid;
+		
+		// 如果还没有这个视频，或者这个条目更新（pubDate更晚），则保留
+		if (!videoMap.has(videoId) || new Date(item.pubDate) > new Date(videoMap.get(videoId).pubDate)) {
+			videoMap.set(videoId, item);
 		}
 	}
+	let uniqueItems = Array.from(videoMap.values());
 
 	let data = {
 		title: `${globalUsername} 的 bilibili 视频`,

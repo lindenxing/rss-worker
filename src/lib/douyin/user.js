@@ -149,10 +149,11 @@ const formatVideoItem = (video, embed = false) => {
 		}
 	}
 	
-	// 获取标签
+	// 获取标签并去重
 	const tags = video.text_extra
 		?.filter(tag => tag.hashtag_name)
 		.map(tag => tag.hashtag_name) || [];
+	const uniqueTags = [...new Set(tags)]; // 去重标签
 	
 	return {
 		title: title.split('\n')[0] || title, // 使用第一行作为标题
