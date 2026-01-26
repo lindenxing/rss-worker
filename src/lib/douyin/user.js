@@ -161,7 +161,7 @@ const formatVideoItem = (video, embed = false) => {
 		guid: videoId,
 		description,
 		pubDate: parseDate(video.create_time * 1000),
-		category: tags,
+		category: uniqueTags,
 		author: video.author?.nickname || '',
 	};
 };
