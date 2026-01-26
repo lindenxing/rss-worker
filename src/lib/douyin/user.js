@@ -161,7 +161,7 @@ const formatVideoItem = (video, embed = false) => {
 		guid: videoId,
 		description,
 		pubDate: parseDate(video.create_time * 1000),
-		category: uniqueTags,
+		category: uniqueTags.join(','), // 转换为逗号分隔的字符串
 		author: video.author?.nickname || '',
 	};
 };
