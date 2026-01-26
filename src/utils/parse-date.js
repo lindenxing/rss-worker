@@ -121,7 +121,14 @@ const toDurations = (matches) => {
 };
 
 module.exports = {
-    parseDate: (date, ...options) => dayjs(date, ...options).toDate(),
+    parseDate: (date, ...options) => {
+        const parsedDate = dayjs(date, ...options).toDate();
+        // 确保返回有效的日期
+        if (isNaN(parsedDate.getTime())) {
+            return new Date();
+        }
+        return parsedDate;
+    },
     parseRelativeDate: (date) => {
         // 预处理日期字符串 date
 

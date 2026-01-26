@@ -1,37 +1,47 @@
 import { renderRss2 } from '../../../utils/util';
 import { GetDynSpace } from '../grpc_helper';
 
+// 确保日期总是有效的
+const ensureValidDate = (date) => {
+	if (isNaN(date.getTime())) {
+		return new Date();
+	}
+	return date;
+};
+
 let getPubDate = (ptimeLabelText) => {
 	let pubDate = new Date().toUTCString();
 	try {
 		if (ptimeLabelText.indexOf('小时前') !== -1) {
 			let hour = ptimeLabelText.split('小时前')[0];
-			pubDate = new Date(new Date().getTime() - hour * 60 * 60 * 1000).toUTCString();
+			pubDate = ensureValidDate(new Date(new Date().getTime() - hour * 60 * 60 * 1000)).toUTCString();
 		} else if (ptimeLabelText.indexOf('分钟前') !== -1) {
 			let minute = ptimeLabelText.split('分钟前')[0];
-			pubDate = new Date(new Date().getTime() - minute * 60 * 1000).toUTCString();
+			pubDate = ensureValidDate(new Date(new Date().getTime() - minute * 60 * 1000)).toUTCString();
 		} else if (ptimeLabelText.indexOf('刚刚') !== -1) {
 			pubDate = new Date().toUTCString();
 		} else if (ptimeLabelText.indexOf('昨天') !== -1) {
 			let hour = ptimeLabelText.split('昨天')[1].split(':')[0];
 			let minute = ptimeLabelText.split('昨天')[1].split(':')[1];
 			let yesterday = new Date(new Date().getTime() - 24 * 60 * 60 * 1000);
-			pubDate = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), hour, minute).toUTCString();
+			pubDate = ensureValidDate(new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), hour, minute)).toUTCString();
 		} else if (ptimeLabelText.indexOf('天前') !== -1) {
 			let day = ptimeLabelText.split('天前')[0];
-			pubDate = new Date(new Date().getTime() - day * 24 * 60 * 60 * 1000).toUTCString();
+			pubDate = ensureValidDate(new Date(new Date().getTime() - day * 24 * 60 * 60 * 1000)).toUTCString();
 		} else if (ptimeLabelText.indexOf('年') !== -1) {
 			let year = ptimeLabelText.split('年')[0];
 			let month = ptimeLabelText.split('年')[1].split('月')[0];
 			let day = ptimeLabelText.split('年')[1].split('月')[1].split('日')[0];
-			pubDate = new Date(year, month - 1, day).toUTCString();
+			pubDate = ensureValidDate(new Date(year, month - 1, day)).toUTCString();
 		} else {
 			let year = new Date().getFullYear();
 			let month = ptimeLabelText.split('月')[0];
 			let day = ptimeLabelText.split('月')[1].split('日')[0];
-			pubDate = new Date(year, month - 1, day).toUTCString();
+			pubDate = ensureValidDate(new Date(year, month - 1, day)).toUTCString();
 		}
-	} catch (e) {}
+	} catch (e) {
+		pubDate = new Date().toUTCString();
+	}
 	return pubDate;
 };
 
