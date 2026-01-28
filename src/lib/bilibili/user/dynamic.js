@@ -90,15 +90,27 @@ let getItemFromDynamicAv = (card) => {
 	for (let desc of card.extend.origDesc) {
 		title += desc.text;
 	}
-	// link
-	let link = `https://t.bilibili.com/${card.extend.dynIdStr}`;
+	
+	// 从 modules 中获取 bvid
+	let bvid = '';
+	for (let _module of card.modules) {
+		if (_module.moduleType === 'module_dynamic' && _module.moduleDynamic?.dynArchive) {
+			bvid = _module.moduleDynamic.dynArchive.bvid || '';
+			break;
+		}
+	}
+	
+	// link - 优先使用视频链接，这样可以更好地去重
+	let link = bvid ? `https://www.bilibili.com/video/${bvid}` : `https://t.bilibili.com/${card.extend.dynIdStr}`;
+	
 	// description
 	let description = title + '<br/>';
 	if (card.extend.origImgUrl) {
 		description += `<img src="${card.extend.origImgUrl}"/>`;
 	}
 	let pubDate = new Date().toUTCString();
-	let guid = `https://t.bilibili.com/${card.extend.dynIdStr}`;
+	// guid - 使用视频链接作为唯一标识
+	let guid = link;
 	let author = '';
 	let category = card.cardType;
 	for (let _module of card.modules) {
