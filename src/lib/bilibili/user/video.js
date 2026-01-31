@@ -13,21 +13,25 @@ let getPubDate = (ptimeLabelText) => {
 	let pubDate = new Date().toUTCString();
 	try {
 		if (ptimeLabelText.indexOf('小时前') !== -1) {
-			let hour = ptimeLabelText.split('小时前')[0];
-			pubDate = ensureValidDate(new Date(new Date().getTime() - hour * 60 * 60 * 1000)).toUTCString();
+			// 对于"小时前",使用今天的日期(00:00:00),避免每次请求生成不同时间
+			let today = new Date();
+			pubDate = ensureValidDate(new Date(today.getFullYear(), today.getMonth(), today.getDate())).toUTCString();
 		} else if (ptimeLabelText.indexOf('分钟前') !== -1) {
-			let minute = ptimeLabelText.split('分钟前')[0];
-			pubDate = ensureValidDate(new Date(new Date().getTime() - minute * 60 * 1000)).toUTCString();
+			// 对于"分钟前",使用今天的日期(00:00:00)
+			let today = new Date();
+			pubDate = ensureValidDate(new Date(today.getFullYear(), today.getMonth(), today.getDate())).toUTCString();
 		} else if (ptimeLabelText.indexOf('刚刚') !== -1) {
-			pubDate = new Date().toUTCString();
+			// 对于"刚刚",使用今天的日期(00:00:00)
+			let today = new Date();
+			pubDate = ensureValidDate(new Date(today.getFullYear(), today.getMonth(), today.getDate())).toUTCString();
 		} else if (ptimeLabelText.indexOf('昨天') !== -1) {
-			let hour = ptimeLabelText.split('昨天')[1].split(':')[0];
-			let minute = ptimeLabelText.split('昨天')[1].split(':')[1];
+			// 对于"昨天",使用昨天的日期(00:00:00)
 			let yesterday = new Date(new Date().getTime() - 24 * 60 * 60 * 1000);
-			pubDate = ensureValidDate(new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), hour, minute)).toUTCString();
+			pubDate = ensureValidDate(new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate())).toUTCString();
 		} else if (ptimeLabelText.indexOf('天前') !== -1) {
 			let day = ptimeLabelText.split('天前')[0];
-			pubDate = ensureValidDate(new Date(new Date().getTime() - day * 24 * 60 * 60 * 1000)).toUTCString();
+			let targetDate = new Date(new Date().getTime() - day * 24 * 60 * 60 * 1000);
+			pubDate = ensureValidDate(new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate())).toUTCString();
 		} else if (ptimeLabelText.indexOf('年') !== -1) {
 			let year = ptimeLabelText.split('年')[0];
 			let month = ptimeLabelText.split('年')[1].split('月')[0];
