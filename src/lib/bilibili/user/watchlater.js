@@ -59,12 +59,18 @@ let deal = async (ctx) => {
 		const data = await response.json();
 
 		if (data.code !== 0) {
+			const errorMsg = (data.message || '未知错误')
+				.replace(/&/g, '&amp;')
+				.replace(/</g, '&lt;')
+				.replace(/>/g, '&gt;')
+				.replace(/"/g, '&quot;')
+				.replace(/'/g, '&apos;');
 			return ctx.body(`<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
   <channel>
     <title>Bilibili 稍后阅读 - 错误</title>
     <link>https://www.bilibili.com</link>
-    <description>API 错误: ${data.message || '未知错误'}</description>
+    <description>API 错误: ${errorMsg}</description>
     <language>zh-cn</language>
   </channel>
 </rss>`, 200, {
@@ -130,12 +136,18 @@ let deal = async (ctx) => {
 		});
 	} catch (e) {
 		console.error('Error fetching watchlater:', e);
+		const errorMsg = (e.message || '未知错误')
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;')
+			.replace(/'/g, '&apos;');
 		return ctx.body(`<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
   <channel>
     <title>Bilibili 稍后阅读 - 错误</title>
     <link>https://www.bilibili.com</link>
-    <description>获取稍后阅读列表失败: ${e.message}</description>
+    <description>获取稍后阅读列表失败: ${errorMsg}</description>
     <language>zh-cn</language>
   </channel>
 </rss>`, 200, {
